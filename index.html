@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1D5C48">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Proste učilnice">
+<title>Proste učilnice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --floor:#E4E9EB; --surface:#F4F7F8; --ink:#172126; --muted:#56656C; --line:#C5CED2;
+  --plate:#1D5C48; --plate-ink:#F3F7F5; --plate-soft:#D6E6DF; --plate-soft-ink:#1D5C48;
+  --sel:#172126; --sel-ink:#F4F7F8;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --floor:#121719; --surface:#1A2124; --ink:#E3EAEC; --muted:#93A2A8; --line:#2C373B;
+  --plate:#2E7A5F; --plate-ink:#F3F7F5; --plate-soft:#1F332C; --plate-soft-ink:#8FD0B5;
+  --sel:#E3EAEC; --sel-ink:#121719;
+  color-scheme:dark;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--floor);color:var(--ink);font:16px/1.45 Barlow,"Segoe UI",Roboto,Arial,sans-serif;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+main{max-width:640px;margin:0 auto;padding:18px 16px 40px}
+h1{font:500 15px/1.2 Barlow,sans-serif;color:var(--muted);margin:0 0 6px}
+.dan{position:relative;display:inline-block;font:700 34px/1.05 "Barlow Condensed","Arial Narrow",sans-serif;margin:0 0 14px}
+.dan span{border-bottom:2px solid var(--line)}
+.dan input{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px}
+.ure{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin:0 -16px 18px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.ure::-webkit-scrollbar{display:none}
+.ura{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:6px 10px;
+  font:inherit;text-align:left;cursor:pointer;min-width:62px}
+.ura b{display:block;font:700 20px/1.1 "Barlow Condensed","Arial Narrow",sans-serif}
+.ura small{font-size:12px;color:var(--muted)}
+.ura[aria-pressed="true"]{background:var(--sel);color:var(--sel-ink);border-color:var(--sel)}
+.ura[aria-pressed="true"] small{color:inherit;opacity:.75}
+.ura:focus-visible,.dan input:focus-visible+span,summary:focus-visible,label:focus-within{outline:2px solid var(--plate);outline-offset:2px}
+.povzetek{margin:0 0 12px;color:var(--muted)}
+.mreza{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:10px}
+.tabla{border-radius:8px;padding:10px 12px 9px;background:var(--plate);color:var(--plate-ink);min-height:86px}
+.tabla.mirna{background:var(--plate-soft);color:var(--plate-soft-ink)}
+.tabla b{display:block;font:700 40px/1 "Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:.5px}
+.tabla small{display:block;font-size:12px;line-height:1.3;margin-top:6px;opacity:.9}
+.prazno{background:var(--surface);border-radius:8px;padding:16px;color:var(--muted)}
+details{margin-top:22px;border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;color:var(--muted)}
+.zasedene{font-size:14px;margin-top:8px;display:grid;gap:3px}
+.zasedene b{display:inline-block;min-width:44px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:16px}
+.moznosti{display:flex;align-items:center;gap:8px;margin:18px 0 0;color:var(--muted);font-size:14px}
+footer{margin-top:24px;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Proste učilnice, Gimnazija Kranj</h1>
+  <label class="dan"><input type="date" id="datum" aria-label="Izberi dan"><span id="dan-besedilo">…</span></label>
+  <div class="ure" id="ure" role="group" aria-label="Šolska ura"></div>
+  <p class="povzetek" id="povzetek">Nalagam urnike …</p>
+  <div id="rezultat"></div>
+  <label class="moznosti"><input type="checkbox" id="vsi"> Prikaži tudi telovadnice, bazen in druge posebne prostore</label>
+  <footer id="noga"></footer>
+</main>
+<script>
+(function(){
+  var data=null, izbranaUra=null;
+  var $=function(id){return document.getElementById(id)};
+  var pad=function(n){return (n<10?'0':'')+n};
+  var ymd=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+  var izYmd=function(s){var a=s.split('-');return new Date(+a[0],a[1]-1,+a[2])};
+  var vikend=function(d){return d.getDay()===0||d.getDay()===6};
+  var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+  var cas=function(m){return Math.floor(m/60)+':'+pad(m%60)};
+  var prosta=function(t){return t===''||/odpad/i.test(t)};
+
+  function tedenZa(d){
+    var s=ymd(d);
+    for(var i=0;i<data.tedni.length;i++){var k=data.tedni[i].dni.indexOf(s);if(k>=0)return{w:data.tedni[i],dan:k}}
+    return null;
+  }
+  function kratko(u){var m=u.lab.match(/^(\d+)\s*\./);return m?m[1]+'.':u.lab.split(' ')[0]}
+
+  function rabljena(t,i){return Object.keys(t.w.ucilnice).some(function(k){return t.w.ucilnice[k][i][t.dan]!==''})}
+  function casovne(t){return t.w.ure.map(function(u,i){return{u:u,i:i}}).filter(function(o){return o.u.a!=null})}
+  function prvaRabljena(t){var s=casovne(t);for(var q=0;q<s.length;q++)if(rabljena(t,s[q].i))return s[q].i;return s.length?s[0].i:0}
+  function konecPouka(t){var k=0;casovne(t).forEach(function(o){if(rabljena(t,o.i))k=Math.max(k,o.u.b)});return k}
+
+  function privzeto(){
+    var zdaj=new Date(), d=new Date(zdaj.getFullYear(),zdaj.getMonth(),zdaj.getDate());
+    var min=zdaj.getHours()*60+zdaj.getMinutes(), t=tedenZa(d), ura=0;
+    if(vikend(d)||!t||min>=konecPouka(t)){
+      do{d.setDate(d.getDate()+1)}while(vikend(d));
+      t=tedenZa(d); ura=t?prvaRabljena(t):0;
+    }else{
+      var s=casovne(t); ura=s.length?s[s.length-1].i:0;
+      for(var j=0;j<s.length;j++){if(s[j].u.b>min){ura=s[j].i;break}}
+      ura=Math.max(ura,prvaRabljena(t));
+    }
+    $('datum').value=ymd(d); izbranaUra=ura;
+  }
+
+  function narisiUre(w){
+    var html='';
+    w.ure.forEach(function(u,i){
+      var rabljena=Object.keys(w.ucilnice).some(function(k){return w.ucilnice[k][i].some(function(c){return c!==''})});
+      if(!rabljena&&i!==izbranaUra)return;
+      html+='<button class="ura" data-i="'+i+'" aria-pressed="'+(i===izbranaUra)+'"><b>'+esc(kratko(u))+'</b><small>'+(u.a!=null?cas(u.a):'&nbsp;')+'</small></button>';
+    });
+    $('ure').innerHTML=html;
+    var sel=$('ure').querySelector('[aria-pressed="true"]');
+    if(sel&&sel.scrollIntoView)sel.scrollIntoView({block:'nearest',inline:'center'});
+  }
+
+  function izrisi(){
+    var d=izYmd($('datum').value);
+    $('dan-besedilo').textContent=d.toLocaleDateString('sl-SI',{weekday:'long',day:'numeric',month:'numeric'});
+    if(vikend(d)){$('ure').innerHTML='';$('povzetek').textContent='Ta dan ni pouka.';$('rezultat').innerHTML='';return}
+    var t=tedenZa(d);
+    if(!t){$('ure').innerHTML='';$('povzetek').textContent='Za ta dan urnika še ni. Na voljo sta tekoči in naslednji teden.';$('rezultat').innerHTML='';return}
+    var w=t.w, dan=t.dan;
+    if(izbranaUra==null||izbranaUra>=w.ure.length)izbranaUra=0;
+    narisiUre(w);
+    var i=izbranaUra, vsi=$('vsi').checked;
+    var imena=Object.keys(w.ucilnice).filter(function(n){return vsi||/^\d+$/.test(n)});
+    var proste=[], zasedene=[];
+    imena.forEach(function(n){
+      var m=w.ucilnice[n], zdaj=m[i][dan], prej=i>0?m[i-1][dan]:'', potem=i+1<m.length?m[i+1][dan]:'';
+      (prosta(zdaj)?proste:zasedene).push({n:n,zdaj:zdaj,prej:prej,potem:potem});
+    });
+    proste.sort(function(a,b){return (b.prej!=='')-(a.prej!=='')||(a.potem!=='')-(b.potem!=='')||(parseInt(a.n)||999)-(parseInt(b.n)||999)});
+    zasedene.sort(function(a,b){return (parseInt(a.n)||999)-(parseInt(b.n)||999)});
+    var u=w.ure[i];
+    var n=proste.length, st=n%100===1?' prosta učilnica':n%100===2?' prosti učilnici':(n%100===3||n%100===4)?' proste učilnice':' prostih učilnic';
+    var m=u.lab.match(/^(\d+)\s*\./), kdaj=m?'v '+m[1]+'. uri':/predur/i.test(u.lab)?'v preduri':'v terminu '+u.lab.split(' ')[0];
+    $('povzetek').textContent=n+st+' '+kdaj+(u.a!=null?' ('+cas(u.a)+' do '+cas(u.b)+')':'')+'.';
+    var html=proste.length?'<div class="mreza">'+proste.map(function(o){
+      var opombe=[];
+      opombe.push(o.prej!==''?'prej pouk':'prej prazna');
+      if(o.potem==='')opombe.push('prosta tudi naprej');
+      if(/odpad/i.test(o.zdaj))opombe.push('ura odpade');
+      return '<div class="tabla'+(o.prej===''?' mirna':'')+'"><b>'+esc(o.n)+'</b><small>'+opombe.join(', ')+'</small></div>';
+    }).join('')+'</div>':'<div class="prazno">V tej uri ni nobena učilnica prosta. Izberi drugo uro zgoraj.</div>';
+    html+='<details><summary>Zasedene ('+zasedene.length+')</summary><div class="zasedene">'+zasedene.map(function(o){return '<div><b>'+esc(o.n)+'</b> '+esc(o.zdaj)+'</div>'}).join('')+'</div></details>';
+    $('rezultat').innerHTML=html;
+  }
+
+  $('ure').addEventListener('click',function(e){var b=e.target.closest('.ura');if(!b)return;izbranaUra=+b.getAttribute('data-i');izrisi()});
+  $('datum').addEventListener('change',function(){if($('datum').value)izrisi()});
+  $('vsi').addEventListener('change',izrisi);
+
+  fetch('data.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(j){
+    data=j; privzeto(); izrisi();
+    var s=new Date(j.spremenjeno);
+    $('noga').textContent='Urniki se z eAsistenta preverjajo vsakih 30 minut med poukom. Zadnja sprememba: '+s.toLocaleString('sl-SI',{weekday:'short',day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'})+'. Učilnica brez pouka v urniku je lahko vseeno zasedena ali zaklenjena.';
+  }).catch(function(){$('povzetek').textContent='Podatkov ni bilo mogoče naložiti. Osveži stran čez minuto.'});
+})();
+</script>
+</body>
+</html>
