@@ -5,17 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F3F5F4">
 <meta name="color-scheme" content="light">
+<meta name="description" content="Katere učilnice na Gimnaziji Kranj so proste v izbrani šolski uri in kje ima pouk tvoj razred.">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Proste učilnice">
-<title>Proste učilnice</title>
+<meta name="apple-mobile-web-app-title" content="Učilnice">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Proste učilnice · Gimnazija Kranj</title>
+<link rel="icon" href="ikona.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="ikona-180.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <style>
+/* Oblikovni sistem
+   barve: zelena = prosto, črnilo = tvoje, jantar = sprememba v urniku
+   razmiki: 4 8 12 16 24   polmeri: 6 (oznake) 10 (ploščice, polja) 16 (kartice) in pilula (ure) */
 :root{
-  --bg:#F3F5F4; --card:#FFFFFF; --ink:#16201C; --muted:#64716C; --line:#E1E6E3;
-  --green:#1F6B52; --green-ink:#FFFFFF; --soft:#E6F1EC; --soft-ink:#1F6B52; --soft-line:#CFE3D9;
-  --warn:#9A5B13; --warn-bg:#FBF0E1;
+  --bg:#F3F5F4; --card:#FFFFFF; --ink:#16201C; --muted:#5F6C67; --faint:#8C9893; --line:#E1E6E3;
+  --free:#1F6B52; --free-ink:#FFFFFF; --free-soft:#E6F1EC; --free-soft-line:#CFE3D9;
+  --amber:#8F5610; --amber-bg:#FBF0E1;
+  --r-s:6px; --r-m:10px; --r-l:16px;
+  --num:"Barlow Condensed","Arial Narrow",sans-serif;
   color-scheme:light;
 }
 *{box-sizing:border-box}
@@ -23,86 +33,113 @@
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Barlow,"Segoe UI",Roboto,Arial,sans-serif;
   padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
-main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
-.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif}
-h1{font:500 13px/1.2 Barlow,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
-.dan{position:relative;display:inline-block;font:700 30px/1.1 "Barlow Condensed","Arial Narrow",sans-serif;margin:0 0 12px;cursor:pointer}
-.dan span{border-bottom:2px dotted #B9C3BE}
+main{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--free);outline-offset:2px}
+
+.glava{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.glava img{width:24px;height:24px;border-radius:var(--r-s)}
+.glava strong{font:700 17px/1 var(--num);letter-spacing:.01em}
+.glava span{margin-left:auto;font-size:13px;color:var(--muted)}
+
+.dan-vrsta{display:flex;align-items:center;gap:4px;margin:0 -8px 12px}
+.puscica{flex:0 0 auto;width:40px;height:40px;border:0;background:none;border-radius:var(--r-m);display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+.puscica:active{background:var(--line)}
+.puscica svg{width:20px;height:20px}
+.dan{position:relative;flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;cursor:pointer}
 .dan input{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px;cursor:pointer}
+.dan b{font:700 28px/1.1 var(--num);white-space:nowrap}
+.dan small{font-size:13px;color:var(--muted)}
 
-.ure{display:flex;gap:6px;overflow-x:auto;margin:0 -16px 16px;padding:2px 16px 4px;scrollbar-width:none}
+.ure{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 16px;padding:2px 16px 4px;scrollbar-width:none}
 .ure::-webkit-scrollbar{display:none}
-.ura{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px 5px 11px;
-  font:inherit;cursor:pointer;display:flex;align-items:baseline;gap:5px;white-space:nowrap}
-.ura b{font:700 17px/1.1 "Barlow Condensed","Arial Narrow",sans-serif}
+.ura{position:relative;flex:0 0 auto;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;
+  cursor:pointer;display:flex;align-items:baseline;gap:4px;white-space:nowrap}
+.ura b{font:700 17px/1.2 var(--num)}
 .ura small{font-size:12px;color:var(--muted)}
-.ura[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--green-ink)}
-.ura[aria-pressed="true"] small{color:inherit;opacity:.8}
-.ura:focus-visible,.dan:focus-within span,select:focus-visible,summary:focus-visible,.moznosti:focus-within{outline:2px solid var(--green);outline-offset:2px}
+.ura.zdaj::after{content:"";position:absolute;top:3px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--free)}
+.ura[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.ura[aria-pressed="true"] small{color:inherit;opacity:.75}
+.ura[aria-pressed="true"].zdaj::after{background:#7FD3B0}
 
-.kartica{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:18px}
-.razred-glava{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.razred-glava span{font-size:13px;color:var(--muted)}
-select{font:600 15px Barlow,sans-serif;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 26px 5px 10px;
-  appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
-  background-position:right 12px center,right 7px center;background-size:5px 5px;background-repeat:no-repeat}
-.pouki{margin-top:10px;display:grid;gap:8px}
+.kartica{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);padding:12px 16px 16px;margin-bottom:24px}
+.kartica-glava{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:36px}
+.kartica-glava span{font-size:13px;color:var(--muted)}
+select{font:600 15px Barlow,sans-serif;color:var(--ink);background-color:var(--bg);border:1px solid var(--line);border-radius:var(--r-m);padding:6px 32px 6px 12px;min-height:36px;
+  appearance:none;-webkit-appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%235F6C67' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;background-size:16px}
+.pouki{margin-top:12px;display:grid;gap:12px}
 .pouk{display:flex;align-items:center;gap:12px}
-.pouk .uc{flex:0 0 auto;min-width:46px;height:42px;padding:0 8px;border-radius:9px;background:var(--green);color:var(--green-ink);
-  display:flex;align-items:center;justify-content:center;font:700 22px/1 "Barlow Condensed","Arial Narrow",sans-serif}
-.pouk .uc.crk{font-size:15px}
-.pouk b{display:block;font-weight:600;font-size:16px;line-height:1.2}
+.pouk .uc{flex:0 0 auto;min-width:48px;height:44px;padding:0 8px;border-radius:var(--r-m);background:var(--ink);color:#fff;
+  display:grid;place-items:center;font:700 22px/1 var(--num)}
+.pouk .uc.crk{font-size:15px;text-transform:uppercase;letter-spacing:.02em}
+.pouk b{display:block;font-weight:600;font-size:16px;line-height:1.25}
 .pouk small{color:var(--muted);font-size:13px}
-.pouk.odpade .uc{background:var(--line);color:var(--muted)}
-.pouk.odpade b{text-decoration:line-through;color:var(--muted)}
-.tag{display:inline-block;font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--warn-bg);color:var(--warn);margin-left:4px;vertical-align:1px}
-.nic{margin:10px 0 0;color:var(--muted)}
-.potem{margin:10px 0 0;padding-top:9px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.pouk.odpade .uc{background:var(--line);color:var(--faint)}
+.pouk.odpade b{text-decoration:line-through;color:var(--faint)}
+.tag{display:inline-block;font-size:11px;font-weight:600;line-height:16px;padding:0 6px;border-radius:var(--r-s);background:var(--amber-bg);color:var(--amber);margin-left:4px;vertical-align:1px}
+.nic{margin:12px 0 0;color:var(--muted)}
+.potem{margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
 .potem b{color:var(--ink);font-weight:600}
 
-.povzetek{margin:0 0 4px;font-weight:500}
-.legenda{display:flex;gap:14px;font-size:12px;color:var(--muted);margin:0 0 14px}
-.legenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.legenda .t{background:var(--green)} .legenda .s{background:var(--soft);border:1px solid var(--soft-line)}
-.nad{margin-bottom:14px}
-.nad h2{display:flex;justify-content:space-between;font:600 13px/1.2 Barlow,sans-serif;color:var(--muted);margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--line)}
-.nad h2 span{font-weight:400}
-.mreza{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:6px}
-.tabla{border-radius:9px;padding:6px 8px 5px;background:var(--green);color:var(--green-ink);min-height:52px}
-.tabla.mirna{background:var(--soft);color:var(--soft-ink);border:1px solid var(--soft-line)}
-.tabla b{display:block;font:700 22px/1 "Barlow Condensed","Arial Narrow",sans-serif}
-.tabla small{display:block;font-size:11px;line-height:1.2;margin-top:4px;opacity:.85;white-space:nowrap}
-.prazno{color:var(--muted);font-size:13px;margin:0}
+.povzetek{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 0 12px}
+.povzetek b{font:700 22px/1.1 var(--num)}
+.povzetek span{font-size:13px;color:var(--muted)}
+.mreza{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:8px}
+.tabla{border-radius:var(--r-m);padding:0 8px;background:var(--free);color:var(--free-ink);height:52px;display:flex;flex-direction:column;justify-content:center}
+.tabla.mirna{background:var(--free-soft);color:var(--free);box-shadow:inset 0 0 0 1px var(--free-soft-line)}
+.tabla.odp{background:var(--amber-bg);color:var(--amber);box-shadow:none}
+.tabla b{display:block;font:700 22px/1 var(--num)}
+.tabla.crk b{font-size:15px;line-height:22px;text-transform:uppercase}
+.tabla small{display:block;font-size:11px;line-height:1.2;margin-top:3px;opacity:.85;white-space:nowrap}
+.razlaga{font-size:12px;color:var(--muted);margin:12px 0 0;display:flex;gap:8px;align-items:flex-start}
+.razlaga i{flex:0 0 auto;width:10px;height:10px;border-radius:3px;background:var(--free);margin-top:3px}
 
-details{margin-top:18px;border-top:1px solid var(--line);padding-top:10px}
-summary{cursor:pointer;color:var(--muted);font-size:14px}
-.zasedene{font-size:13px;margin-top:8px;display:grid;gap:4px}
+.stanje{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);padding:16px;color:var(--muted)}
+.stanje p{margin:0}
+.gumb{margin-top:12px;border:1px solid var(--line);background:var(--bg);border-radius:var(--r-m);padding:8px 12px;font-weight:600;cursor:pointer;color:var(--ink)}
+.gumb:active{background:var(--line)}
+
+.okostje .ura,.okostje .tabla{background:#E7ECE9;border-color:transparent;color:transparent;box-shadow:none}
+.okostje .ura{width:72px;height:31px}
+
+details{margin-top:24px;border-top:1px solid var(--line)}
+#vsebina>.stanje{margin-bottom:24px}
+summary{list-style:none;cursor:pointer;color:var(--muted);font-size:14px;padding:12px 0;display:flex;align-items:center;gap:8px}
+summary::-webkit-details-marker{display:none}
+summary svg{width:16px;height:16px;transition:transform .15s}
+details[open] summary svg{transform:rotate(90deg)}
+.zasedene{font-size:13px;display:grid;gap:4px;padding-bottom:4px}
 .zasedene div{display:flex;gap:8px}
-.zasedene b{flex:0 0 38px;font:700 15px/1.3 "Barlow Condensed","Arial Narrow",sans-serif}
-.moznosti{display:flex;align-items:center;gap:8px;margin:16px 0 0;color:var(--muted);font-size:14px}
-footer{margin-top:22px;font-size:12px;color:var(--muted)}
+.zasedene b{flex:0 0 40px;font:700 15px/1.35 var(--num)}
+.zasedene span{color:var(--muted)}
+.moznost{display:flex;align-items:center;gap:8px;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px;cursor:pointer}
+.moznost input{width:18px;height:18px;margin:0;accent-color:var(--free)}
+footer{margin-top:16px;font-size:12px;line-height:1.5;color:var(--faint)}
 </style>
 </head>
 <body>
 <main>
-  <h1>Proste učilnice · Gimnazija Kranj</h1>
-  <label class="dan"><input type="date" id="datum" aria-label="Izberi dan"><span id="dan-besedilo">…</span></label>
-  <div class="ure" id="ure" role="group" aria-label="Šolska ura"></div>
-  <section class="kartica" id="razred-kartica" hidden>
-    <div class="razred-glava"><span>Moj razred</span><select id="razred" aria-label="Moj razred"><option value="">izberi</option></select></div>
-    <div id="razred-vsebina"></div>
-  </section>
-  <p class="povzetek" id="povzetek">Nalagam urnike …</p>
-  <div class="legenda" id="legenda" hidden><span><i class="t"></i>uro prej pouk</span><span><i class="s"></i>uro prej prazna</span></div>
-  <div id="rezultat"></div>
-  <label class="moznosti"><input type="checkbox" id="vsi"> Prikaži tudi telovadnice, bazen in druge posebne prostore</label>
+  <div class="glava"><img src="ikona.svg" alt=""><strong>Proste učilnice</strong><span>Gimnazija Kranj</span></div>
+
+  <div class="dan-vrsta">
+    <button class="puscica" id="prej" aria-label="Prejšnji šolski dan"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 5-5 5 5 5"/></svg></button>
+    <label class="dan"><input type="date" id="datum" aria-label="Izberi dan"><b id="dan-besedilo">&nbsp;</b><small id="dan-oznaka"></small></label>
+    <button class="puscica" id="naprej" aria-label="Naslednji šolski dan"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m8 5 5 5-5 5"/></svg></button>
+  </div>
+
+  <div id="vsebina" class="okostje">
+    <div class="ure"><span class="ura"></span><span class="ura"></span><span class="ura"></span><span class="ura"></span><span class="ura"></span></div>
+    <div class="mreza"><div class="tabla"></div><div class="tabla"></div><div class="tabla"></div><div class="tabla"></div><div class="tabla"></div><div class="tabla"></div><div class="tabla"></div><div class="tabla"></div><div class="tabla"></div><div class="tabla"></div></div>
+  </div>
+
+  <label class="moznost" id="moznost" hidden><input type="checkbox" id="vsi"> Pokaži tudi telovadnice in posebne prostore</label>
   <footer id="noga"></footer>
 </main>
 <script>
 (function(){
-  var ZADNJA_URA=10;
-  var NADSTROPJA={0:'Pritličje',1:'1. nadstropje',2:'2. nadstropje',4:'Zgornje nadstropje',99:'Drugi prostori'};
-  var KLJUC='proste-ucilnice';
+  var ZADNJA_URA=10, KLJUC='proste-ucilnice';
   var data=null, izbranaUra=null;
   var $=function(id){return document.getElementById(id)};
   var pad=function(n){return (n<10?'0':'')+n};
@@ -112,22 +149,23 @@ footer{margin-top:22px;font-size:12px;color:var(--muted)}
   var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
   var cas=function(m){return Math.floor(m/60)+':'+pad(m%60)};
   var prosta=function(t){return t===''||/odpad/i.test(t)};
-  var predmet=function(s){return String(s).replace(/\s*-\s*/g,' ')};
   var stevilo=function(n){var m=n.match(/^(\d+)\s*\./);return m?+m[1]:null};
+  var predmet=function(s){return String(s).replace(/\s*-\s*/g,' ')};
+  var danes=function(){var z=new Date();return new Date(z.getFullYear(),z.getMonth(),z.getDate())};
+  var dodaj=function(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x};
+  var solski=function(d,smer){do{d=dodaj(d,smer)}while(vikend(d));return d};
+  var kratekDan=function(d){return d.toLocaleDateString('sl-SI',{weekday:'long',day:'numeric',month:'numeric'})};
+  var SKL=function(n,a,b,c,d){n=Math.abs(n)%100;return n===1?a:n===2?b:(n===3||n===4)?c:d};
 
   function nastavitve(){try{return JSON.parse(localStorage.getItem(KLJUC))||{}}catch(e){return{}}}
-  function shrani(){try{localStorage.setItem(KLJUC,JSON.stringify({razred:$('razred').value,vsi:$('vsi').checked}))}catch(e){}}
+  function shrani(o){try{var s=nastavitve();for(var k in o)s[k]=o[k];localStorage.setItem(KLJUC,JSON.stringify(s))}catch(e){}}
 
   function vidna(u){var s=stevilo(u.lab);return /predur/i.test(u.lab)||(s!=null&&s<=ZADNJA_URA)}
-  function kratko(u){var s=stevilo(u.lab);return s!=null?s+'.':/predur/i.test(u.lab)?'Pred':u.lab.split(' ')[0]}
+  function kratko(u){var s=stevilo(u.lab);return s!=null?s+'.':/predur/i.test(u.lab)?'Predura':u.lab.split(' ')[0]}
   function kdaj(u){var s=stevilo(u.lab);return s!=null?'v '+s+'. uri':/predur/i.test(u.lab)?'v preduri':'v terminu '+u.lab.split(' ')[0]}
-  function imeUre(u){var s=stevilo(u.lab);return s!=null?s+'. ura':/predur/i.test(u.lab)?'predura':u.lab.split(' ')[0]}
-
-  function nadstropje(n){
-    if(!/^\d+$/.test(n))return 99;
-    var x=+n; if(x<10)return 0; if(x>=21&&x<=31)return 2; return Math.floor(x/10);
-  }
-  function imeNadstropja(k){return NADSTROPJA[k]||k+'. nadstropje'}
+  function imeUre(u){var s=stevilo(u.lab);return s!=null?s+'. ura':/predur/i.test(u.lab)?'Predura':u.lab.split(' ')[0]}
+  // vrstni red od pritličja navzgor: 1 do 9, 11 do 17, 21 do 31, 42 do 49, nato posebni prostori
+  function red(a,b){var x=/^\d+$/.test(a),y=/^\d+$/.test(b);return x&&y?(+a)-(+b):x?-1:y?1:a.localeCompare(b,'sl')}
 
   function tedenZa(d){
     var s=ymd(d);
@@ -138,13 +176,12 @@ footer{margin-top:22px;font-size:12px;color:var(--muted)}
   function casovne(t){return t.w.ure.map(function(u,i){return{u:u,i:i}}).filter(function(o){return o.u.a!=null&&vidna(o.u)})}
   function prvaRabljena(t){var s=casovne(t);for(var q=0;q<s.length;q++)if(rabljena(t,s[q].i))return s[q].i;return s.length?s[0].i:0}
   function konecPouka(t){var k=0;casovne(t).forEach(function(o){if(rabljena(t,o.i))k=Math.max(k,o.u.b)});return k}
+  function minute(){var z=new Date();return z.getHours()*60+z.getMinutes()}
 
   function privzeto(){
-    var zdaj=new Date(), d=new Date(zdaj.getFullYear(),zdaj.getMonth(),zdaj.getDate());
-    var min=zdaj.getHours()*60+zdaj.getMinutes(), t=tedenZa(d), ura=0;
+    var d=danes(), min=minute(), t=tedenZa(d), ura=0;
     if(vikend(d)||!t||min>=konecPouka(t)){
-      do{d.setDate(d.getDate()+1)}while(vikend(d));
-      t=tedenZa(d); ura=t?prvaRabljena(t):0;
+      d=solski(d,1); t=tedenZa(d); ura=t?prvaRabljena(t):0;
     }else{
       var s=casovne(t); ura=s.length?s[s.length-1].i:0;
       for(var j=0;j<s.length;j++){if(s[j].u.b>min){ura=s[j].i;break}}
@@ -153,116 +190,134 @@ footer{margin-top:22px;font-size:12px;color:var(--muted)}
     $('datum').value=ymd(d); izbranaUra=ura;
   }
 
-  function narisiUre(w){
-    var html='';
+  function ureHtml(w,jeDanes){
+    var min=minute(), html='';
     w.ure.forEach(function(u,i){
       if(!vidna(u))return;
       var rab=Object.keys(w.ucilnice).some(function(k){return w.ucilnice[k][i].some(function(c){return c!==''})});
       if(!rab&&i!==izbranaUra)return;
-      html+='<button class="ura" data-i="'+i+'" aria-pressed="'+(i===izbranaUra)+'"><b>'+esc(kratko(u))+'</b><small>'+(u.a!=null?cas(u.a):'')+'</small></button>';
+      var zdaj=jeDanes&&u.a!=null&&min>=u.a&&min<u.b;
+      html+='<button class="ura'+(zdaj?' zdaj':'')+'" data-i="'+i+'" aria-pressed="'+(i===izbranaUra)+'"'+(zdaj?' title="Ta ura je zdaj"':'')+'><b>'+esc(kratko(u))+'</b><small>'+(u.a!=null?cas(u.a):'')+'</small></button>';
     });
-    $('ure').innerHTML=html;
-    var sel=$('ure').querySelector('[aria-pressed="true"]');
-    if(sel&&sel.scrollIntoView)sel.scrollIntoView({block:'nearest',inline:'center'});
+    return '<div class="ure" id="ure" role="group" aria-label="Šolska ura">'+html+'</div>';
   }
 
-  function ucilnicaHtml(u){var crk=!/^\d+$/.test(u);return '<span class="uc'+(crk?' crk':'')+'">'+esc(u||'?')+'</span>'}
-  function oznakeHtml(o){
-    if(!o)return '';
-    return o.split(', ').filter(function(x){return x&&!/odpad/.test(x)}).map(function(x){return '<span class="tag">'+esc(x)+'</span>'}).join('');
-  }
   function zivi(cell){return (cell||[]).filter(function(x){return !/odpad/.test(x[4])})}
+  function oznakeHtml(o){return (o||'').split(', ').filter(function(x){return x&&!/odpad/.test(x)}).map(function(x){return '<span class="tag">'+esc(x)+'</span>'}).join('')}
 
-  function narisiRazred(w,dan,i){
-    var r=$('razred').value, box=$('razred-vsebina');
-    if(!r||!w.razredi||!w.razredi[r]){box.innerHTML=r?'<p class="nic">Za ta teden ni urnika oddelka '+esc(r)+'.</p>':'<p class="nic">Izberi razred in tu bo pisalo, kje imaš pouk.</p>';return}
-    var m=w.razredi[r], cell=m[i][dan]||[], html='';
-    if(cell.length){
-      html+='<div class="pouki">'+cell.map(function(x){
-        var odp=/odpad/.test(x[4]);
-        return '<div class="pouk'+(odp?' odpade':'')+'">'+ucilnicaHtml(x[2])+'<div><b>'+esc(predmet(x[0]))+'</b><small>'+esc(x[3])+(odp?' · odpade':'')+'</small>'+oznakeHtml(x[4])+'</div></div>';
-      }).join('')+'</div>';
+  function razredHtml(w,dan,i){
+    var imena=Object.keys(w.razredi||{}).sort(function(a,b){return a.localeCompare(b,'sl',{numeric:true})});
+    if(!imena.length)return '';
+    var r=nastavitve().razred||'';
+    if(r&&imena.indexOf(r)<0)r='';
+    var sel='<select id="razred" aria-label="Moj razred"><option value="">Izberi</option>'+imena.map(function(n){return '<option'+(n===r?' selected':'')+'>'+esc(n)+'</option>'}).join('')+'</select>';
+    var telo='';
+    if(!r){
+      telo='<p class="nic">Izberi svoj razred in tu boš videl, kje imaš pouk to in naslednjo uro.</p>';
     }else{
-      html+='<p class="nic">'+esc(kdaj(w.ure[i]).replace(/^v/,'V'))+' nimaš pouka.</p>';
+      var m=w.razredi[r], cell=m[i][dan]||[];
+      if(cell.length){
+        telo+='<div class="pouki">'+cell.map(function(x){
+          var odp=/odpad/.test(x[4]), crk=!/^\d+$/.test(x[2]);
+          return '<div class="pouk'+(odp?' odpade':'')+'"><span class="uc'+(crk?' crk':'')+'">'+esc(x[2]||'?')+'</span><div><b>'+esc(predmet(x[0]))+'</b><small>'+esc(x[3])+(odp?', ura odpade':'')+'</small>'+oznakeHtml(x[4])+'</div></div>';
+        }).join('')+'</div>';
+      }else{
+        telo+='<p class="nic">'+esc(kdaj(w.ure[i]).replace(/^v/,'V'))+' nimaš pouka.</p>';
+      }
+      var nasl=null;
+      for(var j=i+1;j<m.length;j++){if(zivi(m[j][dan]).length){nasl=j;break}}
+      if(nasl!=null){
+        var u=w.ure[nasl], z=zivi(m[nasl][dan]);
+        var kje=z.map(function(x){return esc(predmet(x[0]))+' v '+esc(x[2]||'?')}).slice(0,3).join(', ')+(z.length>3?' in še '+(z.length-3):'');
+        telo+='<p class="potem">Potem <b>'+esc(imeUre(u).toLowerCase())+(u.a!=null?' ob '+cas(u.a):'')+'</b>: '+kje+'</p>';
+      }else{
+        telo+='<p class="potem">Ta dan nimaš več pouka.</p>';
+      }
     }
-    var nasl=null;
-    for(var j=i+1;j<m.length;j++){if(zivi(m[j][dan]).length){nasl=j;break}}
-    if(nasl!=null){
-      var u=w.ure[nasl], z=zivi(m[nasl][dan]);
-      var kje=z.map(function(x){return esc(predmet(x[0]))+' v '+esc(x[2]||'?')}).slice(0,3).join(', ')+(z.length>3?' …':'');
-      html+='<p class="potem">Potem: <b>'+esc(imeUre(u))+(u.a!=null?' ob '+cas(u.a):'')+'</b>, '+kje+'</p>';
-    }else{
-      html+='<p class="potem">'+(cell.length?'Potem ta dan nimaš več pouka.':'Ta dan nimaš več pouka.')+'</p>';
-    }
-    box.innerHTML=html;
+    return '<section class="kartica"><div class="kartica-glava"><span>Moj razred</span>'+sel+'</div>'+telo+'</section>';
   }
 
-  function napolniRazrede(){
-    var imena={};
-    data.tedni.forEach(function(w){Object.keys(w.razredi||{}).forEach(function(n){imena[n]=1})});
-    var s=Object.keys(imena).sort(function(a,b){return a.localeCompare(b,'sl',{numeric:true})});
-    if(!s.length)return;
-    $('razred').innerHTML='<option value="">izberi</option>'+s.map(function(n){return '<option>'+esc(n)+'</option>'}).join('');
-    var shranjen=nastavitve().razred;
-    if(shranjen&&imena[shranjen])$('razred').value=shranjen;
-    $('razred-kartica').hidden=false;
+  function stanje(besedilo,gumb,dejanje){
+    $('moznost').hidden=true;
+    $('vsebina').className='';
+    $('vsebina').innerHTML='<div class="stanje"><p>'+besedilo+'</p>'+(gumb?'<button class="gumb" id="stanje-gumb">'+esc(gumb)+'</button>':'')+'</div>';
+    if(gumb)$('stanje-gumb').onclick=dejanje;
   }
-
-  function prazen(sporocilo){$('ure').innerHTML='';$('povzetek').textContent=sporocilo;$('rezultat').innerHTML='';$('legenda').hidden=true;$('razred-kartica').hidden=true}
+  function pojdiNa(d){$('datum').value=ymd(d);izrisi()}
 
   function izrisi(){
-    var d=izYmd($('datum').value);
-    $('dan-besedilo').textContent=d.toLocaleDateString('sl-SI',{weekday:'long',day:'numeric',month:'numeric'});
-    if(vikend(d))return prazen('Ta dan ni pouka.');
+    var d=izYmd($('datum').value), dd=danes(), razlika=Math.round((d-dd)/864e5);
+    $('dan-besedilo').textContent=kratekDan(d);
+    $('dan-oznaka').textContent=razlika===0?'danes':razlika===1?'jutri':razlika===-1?'včeraj':'';
+    if(vikend(d)){var p=solski(d,1);return stanje('Ta dan ni pouka.','Na '+kratekDan(p),function(){pojdiNa(p)})}
     var t=tedenZa(d);
-    if(!t)return prazen('Za ta dan urnika še ni. Na voljo sta tekoči in naslednji teden.');
+    if(!t){
+      var prvi=izYmd(data.tedni[0].dni[0]);
+      return stanje(d<prvi?'Za pretekle tedne urnika ni več.':'Urnik za ta dan še ni objavljen. Stran pozna tekoči in naslednji teden.','Nazaj na danes',function(){privzeto();izrisi()});
+    }
     var w=t.w, dan=t.dan;
     if(izbranaUra==null||izbranaUra>=w.ure.length||!vidna(w.ure[izbranaUra]))izbranaUra=prvaRabljena(t);
-    narisiUre(w);
     var i=izbranaUra, vsi=$('vsi').checked;
-    $('razred-kartica').hidden=$('razred').options.length<2;
-    narisiRazred(w,dan,i);
 
     var zadnja=0; w.ure.forEach(function(u,k){if(vidna(u))zadnja=k});
-    var imena=Object.keys(w.ucilnice).filter(function(n){return vsi||/^\d+$/.test(n)});
-    imena.sort(function(a,b){return a.localeCompare(b,'sl',{numeric:true})});
-    var nad={}, zasedene=[], st=0;
+    var imena=Object.keys(w.ucilnice).filter(function(n){return vsi||/^\d+$/.test(n)}).sort(red);
+    var proste=[], zasedene=[], temne=0;
     imena.forEach(function(n){
-      var m=w.ucilnice[n], zdaj=m[i][dan], k=nadstropje(n);
-      nad[k]=nad[k]||[];
+      var m=w.ucilnice[n], zdaj=m[i][dan];
       if(!prosta(zdaj)){zasedene.push({n:n,zdaj:zdaj});return}
       var j=i; while(j+1<=zadnja&&prosta(m[j+1][dan]))j++;
-      st++;
-      nad[k].push({n:n,prej:i>0?m[i-1][dan]:'',odp:/odpad/i.test(zdaj),do_:w.ure[j].b});
+      var prej=i>0?m[i-1][dan]:'';
+      if(prej!=='')temne++;
+      proste.push({n:n,prej:prej,odp:/odpad/i.test(zdaj),j:j});
     });
-    var u=w.ure[i];
-    var sk=st%100===1?' prosta učilnica':st%100===2?' prosti učilnici':(st%100===3||st%100===4)?' proste učilnice':' prostih učilnic';
-    $('povzetek').textContent=st+sk+' '+kdaj(u)+(u.a!=null?' ('+cas(u.a)+' do '+cas(u.b)+')':'');
-    $('legenda').hidden=!st;
+    var u=w.ure[i], st=proste.length;
 
-    var html=!st?'<p class="prazno">V tej uri ni nobena učilnica prosta. Izberi drugo uro zgoraj.</p>':Object.keys(nad).map(Number).sort(function(a,b){return a-b}).map(function(k){
-      var p=nad[k];
-      return '<section class="nad"><h2>'+esc(imeNadstropja(k))+'<span>'+(p.length?p.length+(p.length===1?' prosta':p.length===2?' prosti':p.length<5?' proste':' prostih'):'')+'</span></h2>'+
-        (p.length?'<div class="mreza">'+p.map(function(o){
-          var opomba=o.odp?'odpade':o.do_!=null?'do '+cas(o.do_):'';
-          return '<div class="tabla'+(o.prej===''?' mirna':'')+'" title="'+(o.prej===''?'uro prej prazna':'uro prej pouk')+'"><b>'+esc(o.n)+'</b><small>'+opomba+'</small></div>';
-        }).join('')+'</div>':'<p class="prazno">Nič prostega.</p>')+'</section>';
-    }).join('');
-    html+='<details><summary>Zasedene ('+zasedene.length+')</summary><div class="zasedene">'+zasedene.map(function(o){return '<div><b>'+esc(o.n)+'</b><span>'+esc(o.zdaj)+'</span></div>'}).join('')+'</div></details>';
-    $('rezultat').innerHTML=html;
+    var html=ureHtml(w,razlika===0)+razredHtml(w,dan,i);
+    html+='<div class="povzetek"><b>'+st+SKL(st,' prosta učilnica',' prosti učilnici',' proste učilnice',' prostih učilnic')+'</b><span>'+esc(imeUre(u))+(u.a!=null?', '+cas(u.a)+' do '+cas(u.b):'')+'</span></div>';
+    if(st){
+      html+='<div class="mreza">'+proste.map(function(o){
+        var opomba=o.odp?'ura odpade':o.j>i?'do '+cas(w.ure[o.j].b):'';
+        var crk=!/^\d+$/.test(o.n);
+        return '<div class="tabla'+(o.odp?' odp':o.prej===''?' mirna':'')+(crk?' crk':'')+'"><b>'+esc(o.n)+'</b>'+(opomba?'<small>'+opomba+'</small>':'')+'</div>';
+      }).join('')+'</div>';
+      if(temne&&temne<st)html+='<p class="razlaga"><i></i>Temne so imele pouk že uro prej, zato so verjetno odklenjene.</p>';
+    }else{
+      html+='<div class="stanje"><p>'+esc(kdaj(u).replace(/^v/,'V'))+' ni prosta nobena učilnica. Poglej sosednjo uro.</p></div>';
+    }
+    html+='<details><summary><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m8 5 5 5-5 5"/></svg>Zasedene učilnice ('+zasedene.length+')</summary><div class="zasedene">'+
+      zasedene.map(function(o){return '<div><b>'+esc(o.n)+'</b><span>'+esc(o.zdaj)+'</span></div>'}).join('')+'</div></details>';
+
+    $('vsebina').className='';
+    $('vsebina').innerHTML=html;
+    $('moznost').hidden=false;
+    var sel=document.querySelector('.ura[aria-pressed="true"]');
+    if(sel){var box=$('ure');box.scrollLeft=sel.offsetLeft-box.clientWidth/2+sel.clientWidth/2}
   }
 
-  $('ure').addEventListener('click',function(e){var b=e.target.closest('.ura');if(!b)return;izbranaUra=+b.getAttribute('data-i');izrisi()});
-  $('datum').addEventListener('change',function(){if($('datum').value)izrisi()});
-  $('vsi').addEventListener('change',function(){shrani();izrisi()});
-  $('razred').addEventListener('change',function(){shrani();izrisi()});
-
+  $('vsebina').addEventListener('click',function(e){var b=e.target.closest('.ura');if(!b||!b.dataset.i)return;izbranaUra=+b.dataset.i;izrisi()});
+  $('vsebina').addEventListener('change',function(e){if(e.target.id==='razred'){shrani({razred:e.target.value});izrisi()}});
+  $('datum').addEventListener('change',function(){if($('datum').value&&data)izrisi()});
+  $('prej').addEventListener('click',function(){if(data)pojdiNa(solski(izYmd($('datum').value),-1))});
+  $('naprej').addEventListener('click',function(){if(data)pojdiNa(solski(izYmd($('datum').value),1))});
+  $('vsi').addEventListener('change',function(){shrani({vsi:$('vsi').checked});if(data)izrisi()});
   $('vsi').checked=!!nastavitve().vsi;
-  fetch('data.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(j){
-    data=j; napolniRazrede(); privzeto(); izrisi();
-    var s=new Date(j.spremenjeno);
-    $('noga').textContent='Urniki se z eAsistenta preverjajo vsakih 30 minut med poukom. Zadnja sprememba: '+s.toLocaleString('sl-SI',{weekday:'short',day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'})+'. Učilnica brez pouka v urniku je lahko vseeno zasedena ali zaklenjena.';
-  }).catch(function(e){console.error(e);$('povzetek').textContent='Podatkov ni bilo mogoče naložiti. Osveži stran čez minuto.'});
+  $('dan-besedilo').textContent=kratekDan(danes());
+  $('dan-oznaka').textContent='danes';
+  var OKOSTJE=$('vsebina').innerHTML;
+
+  function nalozi(){
+    fetch('data.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(j){
+      data=j; privzeto(); izrisi();
+      var s=new Date(j.spremenjeno);
+      $('noga').textContent='Iz javnega urnika eAsistent, med poukom osveženo vsakih 30 minut. Zadnja sprememba: '+
+        s.toLocaleString('sl-SI',{weekday:'short',day:'numeric',month:'numeric'})+' ob '+s.toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'})+
+        '. Prosta po urniku ni nujno odklenjena.';
+    }).catch(function(e){
+      console.error(e);
+      stanje('Urnika ni bilo mogoče naložiti. Preveri povezavo.','Poskusi znova',function(){$('vsebina').className='okostje';$('vsebina').innerHTML=OKOSTJE;nalozi()});
+    });
+  }
+  nalozi();
 })();
 </script>
 </body>

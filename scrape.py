@@ -71,7 +71,9 @@ def vsebina(celica):
         return ("odpade: " + ", ".join(b["naslov"] for b in bl))[:80]
     po_prof = {}
     for b in zive:  # "4.B, 4.C I. Zupan" namesto "4.B I. Zupan, 4.C I. Zupan"
-        po_prof.setdefault(b["pod"], []).append(b["naslov"])
+        r = po_prof.setdefault(b["pod"], [])
+        if b["naslov"] not in r:  # dva sklopa istega razreda pri istem profesorju
+            r.append(b["naslov"])
     return "; ".join(cisti(", ".join(r) + " " + p) for p, r in po_prof.items())[:80]
 
 
