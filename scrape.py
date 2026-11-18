@@ -63,7 +63,8 @@ def razcleni(txt):
     if not tabele:
         return None
     tabela = max(tabele, key=lambda t: len(t.find_all("tr")))
-    vrstice = tabela.find_all("tr")
+    # samo vrstice glavne tabele, ne vgnezdenih tabel sklopov v celicah
+    vrstice = [tr for tr in tabela.find_all("tr") if tr.find_parent("table") is tabela]
 
     def celice(tr):
         return tr.find_all(["td", "th"], recursive=False)
